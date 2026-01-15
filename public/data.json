@@ -1,30 +1,20 @@
 {
     "products": [
         {
+            "title": "pinturas para velas",
+            "description": "Pinturas para velas",
+            "price": "124",
+            "discount": "0",
+            "image": "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=500&q=80",
+            "id": 1768452527793
+        },
+        {
             "id": 1,
             "title": "Vela Aromática Lavanda",
             "description": "Vela de soja natural con esencia de lavanda relajante. Ideal para meditación y descanso.",
             "price": "15.00",
             "discount": "0",
             "image": "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=500&q=80",
-            "type": "Producto"
-        },
-        {
-            "id": 2,
-            "title": "Set Regalo Navidad",
-            "description": "Caja de regalo con 3 velas temáticas navideñas: Pino, Canela y Vainilla.",
-            "price": "45.00",
-            "discount": "10",
-            "image": "https://images.unsplash.com/photo-1576426863848-c21f5fc6b78d?auto=format&fit=crop&w=500&q=80",
-            "type": "Producto"
-        },
-        {
-            "id": 3,
-            "title": "Vela Decorativa Burbujas",
-            "description": "Vela decorativa con forma de cubo de burbujas. Perfecta para decoración de interiores minimalista.",
-            "price": "12.00",
-            "discount": "0",
-            "image": "https://images.unsplash.com/photo-1622396384954-d84a7e84172c?auto=format&fit=crop&w=500&q=80",
             "type": "Producto"
         }
     ],
