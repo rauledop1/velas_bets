@@ -14,8 +14,6 @@ import WhatsAppButton from './components/WhatsAppButton';
 
 const RecentItems = ({ products, workshops, packages }) => {
   // Combine all items, sort by createdAt (descending), take top 10
-
-  // Helper to get time
   const getTime = (item) => item.createdAt ? new Date(item.createdAt).getTime() : 0;
 
   const allItems = [
@@ -24,45 +22,6 @@ const RecentItems = ({ products, workshops, packages }) => {
     ...packages.map(i => ({ ...i, type: 'Paquete' }))
   ].sort((a, b) => getTime(b) - getTime(a)).slice(0, 10);
 
-  const styles = {
-    section: {
-      padding: '4rem 2rem',
-      maxWidth: '1200px',
-      margin: '0 auto'
-    },
-    grid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-      gap: '2rem',
-      marginTop: '2rem'
-    },
-    card: {
-      backgroundColor: '#fff',
-      borderRadius: '15px',
-      overflow: 'hidden',
-      boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-      display: 'flex',
-      flexDirection: 'column'
-    },
-    image: {
-      width: '100%',
-      height: '200px',
-      objectFit: 'cover'
-    },
-    content: {
-      padding: '1rem'
-    },
-    badge: {
-      display: 'inline-block',
-      padding: '0.2rem 0.8rem',
-      borderRadius: '20px',
-      fontSize: '0.8rem',
-      fontWeight: 'bold',
-      marginBottom: '0.5rem',
-      color: '#fff'
-    }
-  };
-
   const getTypeColor = (type) => {
     if (type === 'Producto') return '#FCB57B';
     if (type === 'Taller') return '#D65A68';
@@ -70,19 +29,38 @@ const RecentItems = ({ products, workshops, packages }) => {
   };
 
   return (
-    <section style={styles.section}>
+    <section className="section container">
       <h2 style={{ textAlign: 'center', color: 'var(--color-text-header)' }}>Agregados Recientemente</h2>
-      <div style={styles.grid}>
-        {allItems.map((item, index) => (
-          <div key={index} style={styles.card}>
-            <img src={item.image} alt={item.title} style={styles.image} />
-            <div style={styles.content}>
-              <span style={{ ...styles.badge, backgroundColor: getTypeColor(item.type) }}>{item.type}</span>
-              <h4 style={{ marginBottom: '0.5rem' }}>{item.title}</h4>
-              <p style={{ fontSize: '0.9rem', color: '#666' }}>{item.description?.substring(0, 60)}...</p>
+      <div className="products-grid">
+        {allItems.map((item, index) => {
+          const numericPrice = parseFloat(item.price);
+          const numericDiscount = parseFloat(item.discount || 0);
+          const hasDiscount = numericDiscount > 0;
+          const discountedPrice = hasDiscount
+            ? (numericPrice - (numericPrice * (numericDiscount / 100))).toFixed(2)
+            : numericPrice;
+
+          return (
+            <div key={index} className="card">
+              <img src={item.image} alt={item.title} className="card-image" />
+              <div className="card-content">
+                <span className="card-badge" style={{ backgroundColor: getTypeColor(item.type) }}>{item.type}</span>
+                <h4 className="card-title">{item.title}</h4>
+                <p className="card-description">{item.description?.substring(0, 60)}...</p>
+
+                <div className="price-container">
+                  {hasDiscount && (
+                    <>
+                      <span className="original-price">${numericPrice}</span>
+                      <span className="discount-label">-{numericDiscount}%</span>
+                    </>
+                  )}
+                  <span className="final-price">${discountedPrice}</span>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
