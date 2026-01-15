@@ -56,7 +56,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 // Products Endpoints
 app.get('/api/products', async (req, res) => {
     try {
-        const result = await db.query('SELECT * FROM tellcandles_dev.products ORDER BY "createdAt" DESC');
+        const result = await db.query('SELECT * FROM tellcandles_dev.products WHERE active = TRUE ORDER BY "createdAt" DESC');
         res.json(result.rows);
     } catch (err) {
         console.error(err);
@@ -68,10 +68,21 @@ app.post('/api/products', async (req, res) => {
     const { title, description, price, discount, image, type } = req.body;
     try {
         const result = await db.query(
-            'INSERT INTO tellcandles_dev.products (title, description, price, discount, image, type, "createdAt") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            'INSERT INTO tellcandles_dev.products (title, description, price, discount, image, type, "createdAt", active) VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE) RETURNING *',
             [title, description, price, discount, image, type, new Date()]
         );
         res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+app.delete('/api/products/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query('UPDATE tellcandles_dev.products SET active = FALSE WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Product soft deleted' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Database error' });

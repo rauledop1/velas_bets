@@ -156,10 +156,26 @@ function App() {
     }
   };
 
-  // Optimistic updates for Edit/Delete (since Backend endpoint for PUT/DELETE is not yet in index.js)
-  // TODO: Add PUT/DELETE to server/index.js
+  // Optimistic updates for Edit (still local only for now)
+  // TODO: Add PUT to server/index.js for Edits
   const handleEdit = (setter) => (updatedItem) => setter(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
-  const handleDelete = (setter) => (id) => setter(prev => prev.filter(i => (i.id) !== id));
+
+  const handleDelete = (setter) => async (id) => {
+    if (!window.confirm("¿Estás seguro de que quieres eliminar este producto?")) return;
+
+    try {
+      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        // Refresh all data
+        fetchData();
+      } else {
+        alert('Error al eliminar producto');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error de conexión');
+    }
+  };
 
   return (
     <Router>
