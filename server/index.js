@@ -29,8 +29,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
         const formData = new FormData();
         // Send request as a file upload (Buffer) with filename
         formData.append('image', req.file.buffer, {
-            filename: req.file.originalname || 'upload.jpg',
-            contentType: req.file.mimetype
+            filename: req.file.originalname || 'upload.jpg'
         });
 
         console.log('🚀 Sending to ImgBB...');
