@@ -14,7 +14,102 @@ import AdminOrders from './components/AdminOrders';
 import { CartProvider } from './context/CartContext';
 
 
-// ... (RecentItems and ErrorBoundary components remain unchanged)
+// Reusing Store component logic for Workshops and Packages by passing different props
+// Ideally we would rename Store to GenericGrid or similar, but for now we can alias imports or just reuse Store and pass "title" prop
+
+const RecentItems = ({ products, workshops, packages }) => {
+  // Combine all items, sort by createdAt (descending), take top 10
+  const getTime = (item) => item.createdAt ? new Date(item.createdAt).getTime() : 0;
+
+  const allItems = [
+    ...products.map(i => ({ ...i, type: 'Producto' })),
+    ...workshops.map(i => ({ ...i, type: 'Taller' })),
+    ...packages.map(i => ({ ...i, type: 'Paquete' }))
+  ].sort((a, b) => getTime(b) - getTime(a)).slice(0, 10);
+
+  const getTypeColor = (type) => {
+    if (type === 'Producto') return '#FCB57B';
+    if (type === 'Taller') return '#D65A68';
+    return '#B4CBA9';
+  };
+
+  return (
+    <section className="section container">
+      <h2 style={{ textAlign: 'center', color: 'var(--color-text-header)' }}>Agregados Recientemente</h2>
+      <div className="products-grid">
+        {allItems.map((item, index) => {
+          const numericPrice = parseFloat(item.price);
+          const numericDiscount = parseFloat(item.discount || 0);
+          const hasDiscount = numericDiscount > 0;
+          const discountedPrice = hasDiscount
+            ? (numericPrice - (numericPrice * (numericDiscount / 100))).toFixed(2)
+            : numericPrice;
+
+          return (
+            <Link key={index} to={`/product/${item.id}`} className="card" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <img src={item.image} alt={item.title} className="card-image" />
+              <div className="card-content">
+                <span className="card-badge" style={{ backgroundColor: getTypeColor(item.type) }}>{item.type}</span>
+                <h4 className="card-title">{item.title}</h4>
+                <p className="card-description">{item.description?.substring(0, 60)}...</p>
+
+                <div className="price-container">
+                  {hasDiscount && (
+                    <>
+                      <span className="original-price">${numericPrice}</span>
+                      <span className="discount-label">-{numericDiscount}%</span>
+                    </>
+                  )}
+                  <span className="final-price">${discountedPrice}</span>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+};
+
+// Error Boundary to catch runtime errors
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <h2>Algo salió mal un error ha ocurrido.</h2>
+          <details style={{ whiteSpace: 'pre-wrap' }}>
+            {this.state.error && this.state.error.toString()}
+          </details>
+          <button
+            onClick={() => {
+              localStorage.clear();
+              window.location.reload();
+            }}
+            style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: 'red', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+          >
+            Borrar Datos y Recargar
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 function App() {
   const [user, setUser] = useState(false);
