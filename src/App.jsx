@@ -7,7 +7,7 @@ import Footer from './components/Footer';
 import Login from './components/Login';
 import Store from './components/Store';
 import WhatsAppButton from './components/WhatsAppButton';
-import { defaultProducts, defaultWorkshops, defaultPackages } from './data/initialData';
+
 
 // Reusing Store component logic for Workshops and Packages by passing different props
 // Ideally we would rename Store to GenericGrid or similar, but for now we can alias imports or just reuse Store and pass "title" prop
@@ -163,28 +163,54 @@ function App() {
     return [state, setState];
   };
 
-  // Seed with default data if empty
-  const [products, setProducts] = usePersistentState('tell_candles_products_v3', defaultProducts);
-  const [workshops, setWorkshops] = usePersistentState('tell_candles_workshops_v3', defaultWorkshops);
-  const [packages, setPackages] = usePersistentState('tell_candles_packages_v3', defaultPackages);
+
+  const [products, setProducts] = usePersistentState('tell_candles_products_v3', []);
+  const [workshops, setWorkshops] = usePersistentState('tell_candles_workshops_v3', []);
+  const [packages, setPackages] = usePersistentState('tell_candles_packages_v3', []);
+
+  // Fetch Global Data (Simulating Database)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/data.json');
+        if (response.ok) {
+          const data = await response.json();
+          // Only load if local storage is empty or to force sync?
+          // For this use case "Global Sync", we want to ensure these items exist.
+          // We will strategy: If products is empty, load data.
+          // Better strategy: We can't easily merge without dupe checking.
+          // Simplest: Check if we have 0 items. If 0, load from JSON.
+
+          setProducts(prev => prev.length === 0 ? data.products : prev);
+          setWorkshops(prev => prev.length === 0 ? data.workshops : prev);
+          setPackages(prev => prev.length === 0 ? data.packages : prev);
+        }
+      } catch (e) {
+        console.error("Error loading data.json", e);
+      }
+    };
+    fetchData();
+  }, []); // Run once on mount
 
   const handleLogin = () => setUser(true);
   const handleLogout = () => setUser(false);
 
   // EXPORT HANDLER
   const handleExport = () => {
-    const data = {
-      defaultProducts: products,
-      defaultWorkshops: workshops,
-      defaultPackages: packages
+    const exportData = {
+      products,
+      workshops,
+      packages
     };
-    const exportString = `export const defaultProducts = ${JSON.stringify(products, null, 2)};\n\nexport const defaultWorkshops = ${JSON.stringify(workshops, null, 2)};\n\nexport const defaultPackages = ${JSON.stringify(packages, null, 2)};`;
+
+    // Copy as simple JSON for easy file replacement
+    const exportString = JSON.stringify(exportData, null, 2);
 
     navigator.clipboard.writeText(exportString).then(() => {
-      alert("¡Datos Compilados Copiados! Mándame este texto para actualizar la web.");
+      alert("¡Datos Copiados! Copia este texto y pégalo en el archivo 'public/data.json' en GitHub para actualizar la web globalmente.");
     }).catch(err => {
       console.error('Error al copiar: ', err);
-      alert("Error al copiar los datos. Revisa la consola.");
+      alert("Error al copiar los datos.");
     });
   };
 
