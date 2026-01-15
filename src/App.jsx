@@ -87,18 +87,69 @@ const RecentItems = ({ products, workshops, packages }) => {
   );
 };
 
+// Error Boundary to catch runtime errors
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <h2>Algo salió mal un error ha ocurrido.</h2>
+          <details style={{ whiteSpace: 'pre-wrap' }}>
+            {this.state.error && this.state.error.toString()}
+          </details>
+          <button
+            onClick={() => {
+              localStorage.clear();
+              window.location.reload();
+            }}
+            style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: 'red', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+          >
+            Borrar Datos y Recargar
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 function App() {
   const [user, setUser] = useState(false);
 
   // Hooks for state with localStorage
   const usePersistentState = (key, initialValue) => {
     const [state, setState] = useState(() => {
-      const saved = localStorage.getItem(key);
-      return saved ? JSON.parse(saved) : initialValue;
+      try {
+        const saved = localStorage.getItem(key);
+        return saved ? JSON.parse(saved) : initialValue;
+      } catch (error) {
+        console.error(`Error parsing localStorage key "${key}":`, error);
+        return initialValue;
+      }
     });
+
     useEffect(() => {
-      localStorage.setItem(key, JSON.stringify(state));
+      try {
+        localStorage.setItem(key, JSON.stringify(state));
+      } catch (error) {
+        console.error(`Error saving to localStorage key "${key}":`, error);
+      }
     }, [key, state]);
+
     return [state, setState];
   };
 
