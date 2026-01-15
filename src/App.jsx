@@ -135,7 +135,14 @@ function App() {
     const [state, setState] = useState(() => {
       try {
         const saved = localStorage.getItem(key);
-        return saved ? JSON.parse(saved) : initialValue;
+        if (!saved) return initialValue;
+
+        const parsed = JSON.parse(saved);
+        // Ensure we don't get 'null' or mismatched types if we expect an array
+        if (parsed === null || (Array.isArray(initialValue) && !Array.isArray(parsed))) {
+          return initialValue;
+        }
+        return parsed;
       } catch (error) {
         console.error(`Error parsing localStorage key "${key}":`, error);
         return initialValue;
@@ -153,9 +160,9 @@ function App() {
     return [state, setState];
   };
 
-  const [products, setProducts] = usePersistentState('tell_candles_products', []);
-  const [workshops, setWorkshops] = usePersistentState('tell_candles_workshops', []);
-  const [packages, setPackages] = usePersistentState('tell_candles_packages', []);
+  const [products, setProducts] = usePersistentState('tell_candles_products_v2', []);
+  const [workshops, setWorkshops] = usePersistentState('tell_candles_workshops_v2', []);
+  const [packages, setPackages] = usePersistentState('tell_candles_packages_v2', []);
 
   const handleLogin = () => setUser(true);
   const handleLogout = () => setUser(false);
