@@ -228,6 +228,28 @@ function App() {
 
         <Footer />
         <WhatsAppButton />
+
+        {/* DEBUG OVERLAY - REMOVE BEFORE PRODUCTION */}
+        <div style={{
+          position: 'fixed',
+          bottom: '10px',
+          left: '10px',
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          color: '#0f0',
+          padding: '15px',
+          zIndex: 9999,
+          borderRadius: '5px',
+          fontFamily: 'monospace',
+          fontSize: '12px',
+          pointerEvents: 'none'
+        }}>
+          <strong>DEBUG PANEL</strong><br />
+          User: {user ? 'LOGGED IN' : 'GUEST'}<br />
+          Products: {products ? products.length : 'NULL'}<br />
+          Workshops: {workshops ? workshops.length : 'NULL'}<br />
+          Packages: {packages ? packages.length : 'NULL'}<br />
+          Path: {window.location.pathname}
+        </div>
       </div>
     </Router>
   );
