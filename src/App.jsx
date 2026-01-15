@@ -6,6 +6,7 @@ import WorkshopGrid from './components/WorkshopGrid';
 import Footer from './components/Footer';
 import Login from './components/Login';
 import Store from './components/Store';
+import WhatsAppButton from './components/WhatsAppButton';
 // Reusing Store component logic for Workshops and Packages by passing different props
 // Ideally we would rename Store to GenericGrid or similar, but for now we can alias imports or just reuse Store and pass "title" prop
 
@@ -166,6 +167,7 @@ function App() {
         </Routes>
 
         <Footer />
+        <WhatsAppButton />
       </div>
     </Router>
   );

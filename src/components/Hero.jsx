@@ -60,21 +60,6 @@ const Hero = () => {
                 Te esperamos en nuestro estudio en CDMX con experiencias únicas de velas artesanales.
             </p>
 
-            <div style={styles.inclusions}>
-                <h3>Todos nuestros talleres incluyen:</h3>
-                <div style={styles.inclusionList}>
-                    <span style={styles.inclusionItem}>🕯 Todos los materiales</span>
-                    <span style={styles.inclusionItem}>🍭 Snacks y bebidas</span>
-                    <span style={styles.inclusionItem}>🎀 Préstamo de herramientas</span>
-                    <span style={styles.inclusionItem}>🌸 Un espacio hermoso en Tell Candles</span>
-                </div>
-                <p style={{ marginTop: '1rem', fontStyle: 'italic' }}>
-                    📍 Ubicación: Plaza Palmas, Calle Héroes de Padierna #138, San Jerónimo Lídice, CDMX
-                </p>
-            </div>
-
-            <img src="/assets/hero_candles_1768444909390.png" alt="Candle Workshop" style={styles.heroImage} />
-
         </section>
     );
 };

@@ -59,8 +59,8 @@ const Footer = () => {
             </div>
 
             <div style={styles.socials}>
-                <a href="#">INSTAGRAM</a>
-                <a href="#">TIK TOK</a>
+                <a href="https://www.instagram.com/tellcandless/" target="_blank" rel="noopener noreferrer">INSTAGRAM</a>
+                <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">FACEBOOK</a>
             </div>
 
             <div style={styles.hours}>
