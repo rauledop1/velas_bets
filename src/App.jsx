@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { collection, onSnapshot, addDoc, deleteDoc, doc } from "firebase/firestore";
-import db from './firebase';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import WorkshopGrid from './components/WorkshopGrid';
@@ -14,13 +12,10 @@ import WhatsAppButton from './components/WhatsAppButton';
 // Ideally we would rename Store to GenericGrid or similar, but for now we can alias imports or just reuse Store and pass "title" prop
 
 const RecentItems = ({ products, workshops, packages }) => {
-  // Combine all items, sort by timestamp (descending) assuming we add a timestamp field, or fallback to simple insert order
-  // Since firestore IDs are random strings, we can't sort by ID. usage of a 'createdAt' field is recommended.
-  // For this implementation, we will assume clientside sorting or just display as receive if timestamp missing.
-  // Let's rely on array order for now or a simple random shuffle if needed, but 'created' timestamp is best practice.
+  // Combine all items, sort by createdAt (descending), take top 10
 
-  // Helper to try parsing 'createdAt' if it exists, else 0
-  const getTime = (item) => item.createdAt ? item.createdAt : 0;
+  // Helper to get time
+  const getTime = (item) => item.createdAt ? new Date(item.createdAt).getTime() : 0;
 
   const allItems = [
     ...products.map(i => ({ ...i, type: 'Producto' })),
@@ -99,54 +94,73 @@ function App() {
   const [workshops, setWorkshops] = useState([]);
   const [packages, setPackages] = useState([]);
 
-  // Generic Firestore Hook
-  const useCollection = (collectionName, setter) => {
-    useEffect(() => {
-      // Subscribe to real-time updates
-      const unsubscribe = onSnapshot(collection(db, collectionName), (snapshot) => {
-        const items = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setter(items);
-      }, (error) => {
-        console.error(`Error fetching ${collectionName}:`, error);
-      });
+  const API_URL = 'http://localhost:3001/api';
 
-      return () => unsubscribe();
-    }, [collectionName, setter]);
+  // Generic Fetch Logic
+  const fetchItems = async (type, setter) => {
+    try {
+      const response = await fetch(`${API_URL}/${type}`);
+      if (response.ok) {
+        const data = await response.json();
+        setter(data);
+      }
+    } catch (error) {
+      console.error(`Error fetching ${type}:`, error);
+    }
   };
 
-  // Bind collections
-  useCollection('products', setProducts);
-  useCollection('workshops', setWorkshops);
-  useCollection('packages', setPackages);
+  useEffect(() => {
+    fetchItems('products', setProducts);
+    fetchItems('workshops', setWorkshops);
+    fetchItems('packages', setPackages);
+  }, []);
 
 
   const handleLogin = () => setUser(true);
   const handleLogout = () => setUser(false);
 
-  // Generic Handlers for Firestore
-  const handleAdd = (collectionName) => async (item) => {
+  // Generic Handlers for API
+  const handleAdd = (type) => async (item) => {
     try {
-      // Add timestamp for sorting
-      const itemWithTimestamp = { ...item, createdAt: Date.now() };
-      // We don't need to manually set ID, Firestore does it, but our UI might rely on it temporarily.
-      // Actually, addDoc returns a ref with the ID. 
-      // The onSnapshot listener will update the local state automatically with the new data from server.
-      await addDoc(collection(db, collectionName), itemWithTimestamp);
+      const response = await fetch(`${API_URL}/${type}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(item),
+      });
+
+      if (response.ok) {
+        const newItem = await response.json();
+        // Update local state directly
+        if (type === 'products') setProducts(prev => [newItem, ...prev]);
+        if (type === 'workshops') setWorkshops(prev => [newItem, ...prev]);
+        if (type === 'packages') setPackages(prev => [newItem, ...prev]);
+      } else {
+        alert("Error al guardar.");
+      }
     } catch (e) {
-      console.error("Error adding document: ", e);
-      alert("Error al guardar en la nube. Revisa tu conexión.");
+      console.error("Error adding item: ", e);
+      alert("Error de conexión.");
     }
   };
 
-  const handleDelete = (collectionName) => async (id) => {
+  const handleDelete = (type) => async (id) => {
     try {
-      await deleteDoc(doc(db, collectionName, id));
+      const response = await fetch(`${API_URL}/${type}/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        if (type === 'products') setProducts(prev => prev.filter(i => i.id !== id));
+        if (type === 'workshops') setWorkshops(prev => prev.filter(i => i.id !== id));
+        if (type === 'packages') setPackages(prev => prev.filter(i => i.id !== id));
+      } else {
+        alert("Error al eliminar.");
+      }
     } catch (e) {
-      console.error("Error deleting document: ", e);
-      alert("Error al eliminar. Intenta de nuevo.");
+      console.error("Error deleting item: ", e);
+      alert("Error de conexión.");
     }
   };
 
