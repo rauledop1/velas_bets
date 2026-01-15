@@ -90,79 +90,29 @@ const RecentItems = ({ products, workshops, packages }) => {
 function App() {
   const [user, setUser] = useState(false);
 
-  const [products, setProducts] = useState([]);
-  const [workshops, setWorkshops] = useState([]);
-  const [packages, setPackages] = useState([]);
-
-  const API_URL = 'http://localhost:3001/api';
-
-  // Generic Fetch Logic
-  const fetchItems = async (type, setter) => {
-    try {
-      const response = await fetch(`${API_URL}/${type}`);
-      if (response.ok) {
-        const data = await response.json();
-        setter(data);
-      }
-    } catch (error) {
-      console.error(`Error fetching ${type}:`, error);
-    }
+  // Hooks for state with localStorage
+  const usePersistentState = (key, initialValue) => {
+    const [state, setState] = useState(() => {
+      const saved = localStorage.getItem(key);
+      return saved ? JSON.parse(saved) : initialValue;
+    });
+    useEffect(() => {
+      localStorage.setItem(key, JSON.stringify(state));
+    }, [key, state]);
+    return [state, setState];
   };
 
-  useEffect(() => {
-    fetchItems('products', setProducts);
-    fetchItems('workshops', setWorkshops);
-    fetchItems('packages', setPackages);
-  }, []);
-
+  const [products, setProducts] = usePersistentState('tell_candles_products', []);
+  const [workshops, setWorkshops] = usePersistentState('tell_candles_workshops', []);
+  const [packages, setPackages] = usePersistentState('tell_candles_packages', []);
 
   const handleLogin = () => setUser(true);
   const handleLogout = () => setUser(false);
 
-  // Generic Handlers for API
-  const handleAdd = (type) => async (item) => {
-    try {
-      const response = await fetch(`${API_URL}/${type}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(item),
-      });
-
-      if (response.ok) {
-        const newItem = await response.json();
-        // Update local state directly
-        if (type === 'products') setProducts(prev => [newItem, ...prev]);
-        if (type === 'workshops') setWorkshops(prev => [newItem, ...prev]);
-        if (type === 'packages') setPackages(prev => [newItem, ...prev]);
-      } else {
-        alert("Error al guardar.");
-      }
-    } catch (e) {
-      console.error("Error adding item: ", e);
-      alert("Error de conexión.");
-    }
-  };
-
-  const handleDelete = (type) => async (id) => {
-    try {
-      const response = await fetch(`${API_URL}/${type}/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        if (type === 'products') setProducts(prev => prev.filter(i => i.id !== id));
-        if (type === 'workshops') setWorkshops(prev => prev.filter(i => i.id !== id));
-        if (type === 'packages') setPackages(prev => prev.filter(i => i.id !== id));
-      } else {
-        alert("Error al eliminar.");
-      }
-    } catch (e) {
-      console.error("Error deleting item: ", e);
-      alert("Error de conexión.");
-    }
-  };
+  // Generic Handlers
+  const handleAdd = (setter) => (item) => setter(prev => [...prev, item]);
+  const handleEdit = (setter) => (updatedItem) => setter(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
+  const handleDelete = (setter) => (id) => setter(prev => prev.filter(i => (i.id) !== id));
 
   return (
     <Router>
@@ -188,8 +138,9 @@ function App() {
               title="Tienda Tell Candles"
               user={user}
               products={products}
-              onAddProduct={handleAdd('products')}
-              onDeleteProduct={handleDelete('products')}
+              onAddProduct={handleAdd(setProducts)}
+              onEditProduct={handleEdit(setProducts)}
+              onDeleteProduct={handleDelete(setProducts)}
             />
           } />
 
@@ -198,8 +149,9 @@ function App() {
               title="Talleres Tell Candles"
               user={user}
               products={workshops}
-              onAddProduct={handleAdd('workshops')}
-              onDeleteProduct={handleDelete('workshops')}
+              onAddProduct={handleAdd(setWorkshops)}
+              onEditProduct={handleEdit(setWorkshops)}
+              onDeleteProduct={handleDelete(setWorkshops)}
             />
           } />
 
@@ -208,8 +160,9 @@ function App() {
               title="Paquetes Tell Candles"
               user={user}
               products={packages}
-              onAddProduct={handleAdd('packages')}
-              onDeleteProduct={handleDelete('packages')}
+              onAddProduct={handleAdd(setPackages)}
+              onEditProduct={handleEdit(setPackages)}
+              onDeleteProduct={handleDelete(setPackages)}
             />
           } />
 
