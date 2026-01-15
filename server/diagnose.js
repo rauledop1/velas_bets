@@ -68,8 +68,8 @@ const pool = new Pool({
             console.log('Testing Database Insert...');
             try {
                 const insertRes = await client.query(
-                    'INSERT INTO tellcandles_dev.products (title, description, price, discount, image, type) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
-                    ['Diagnostic Test', 'Created by diagnose.js', 99.99, 0, imageUrl, 'Producto']
+                    'INSERT INTO tellcandles_dev.products (title, description, price, discount, image, type, "createdAt") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+                    ['Diagnostic Test', 'Created by diagnose.js', 99.99, 0, imageUrl, 'Producto', new Date()]
                 );
                 console.log('✅ Database Insert Success!');
                 console.log('   New Product ID:', insertRes.rows[0].id);

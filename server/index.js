@@ -69,8 +69,8 @@ app.post('/api/products', async (req, res) => {
     const { title, description, price, discount, image, type } = req.body;
     try {
         const result = await db.query(
-            'INSERT INTO tellcandles_dev.products (title, description, price, discount, image, type) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [title, description, price, discount, image, type]
+            'INSERT INTO tellcandles_dev.products (title, description, price, discount, image, type, "createdAt") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [title, description, price, discount, image, type, new Date()]
         );
         res.json(result.rows[0]);
     } catch (err) {
