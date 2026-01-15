@@ -65,7 +65,10 @@ const Header = ({ user, onLogout }) => {
 
                     <li>
                         {user ? (
-                            <button onClick={() => { handleLogout(); closeMenu(); }} className="auth-button btn-logout">Salir</button>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <Link to="/admin/orders" className="nav-item" onClick={closeMenu} style={{ color: 'var(--color-accent)', fontWeight: 'bold' }}>Pedidos</Link>
+                                <button onClick={() => { handleLogout(); closeMenu(); }} className="auth-button btn-logout">Salir</button>
+                            </div>
                         ) : (
                             <Link to="/login" className="auth-button btn-login" onClick={closeMenu}>Ingresar</Link>
                         )}

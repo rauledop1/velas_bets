@@ -185,9 +185,11 @@ const Cart = () => {
                     >
                         Limpiar Carrito
                     </button>
-                    <button style={styles.checkoutButton} onClick={() => alert('¡Gracias por tu compra! (Demo)')}>
-                        Proceder al Pago
-                    </button>
+                    <Link to="/checkout" style={{ textDecoration: 'none' }}>
+                        <button style={styles.checkoutButton}>
+                            Procesar Pedido
+                        </button>
+                    </Link>
                 </div>
             </div>
         </div>

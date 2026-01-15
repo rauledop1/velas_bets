@@ -103,6 +103,76 @@ app.delete('/api/products/:id', async (req, res) => {
     }
 });
 
+import { sendStatusEmail } from './email.js';
+
+// ... (existing helper function / middle of file)
+
+// Orders Endpoints
+
+// Create Order
+app.post('/api/orders', async (req, res) => {
+    const { contactInfo, items, total } = req.body;
+    try {
+        const result = await db.query(
+            'INSERT INTO tellcandles_dev.orders (contact_info, items, total, status) VALUES ($1, $2, $3, $4) RETURNING *',
+            [JSON.stringify(contactInfo), JSON.stringify(items), total, 'Recibido']
+        );
+        const newOrder = result.rows[0];
+
+        // Notify User (Async)
+        sendStatusEmail(contactInfo.email, newOrder.id, 'Recibido', items);
+
+        res.json(newOrder);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// List Orders (Admin)
+// In a real app, this should be protected
+app.get('/api/orders', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM tellcandles_dev.orders ORDER BY created_at DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// Update Order Status
+app.put('/api/orders/:id/status', async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        const result = await db.query(
+            'UPDATE tellcandles_dev.orders SET status = $1 WHERE id = $2 RETURNING *',
+            [status, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        const updatedOrder = result.rows[0];
+
+        // Notify User
+        // Need to parse contact_info to get email
+        const contactInfo = updatedOrder.contact_info; // pg driver parses JSON automatically usually, but let's be safe
+        const email = contactInfo.email || (typeof contactInfo === 'string' ? JSON.parse(contactInfo).email : null);
+
+        if (email) {
+            sendStatusEmail(email, updatedOrder.id, status, updatedOrder.items);
+        }
+
+        res.json(updatedOrder);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
