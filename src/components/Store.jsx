@@ -140,13 +140,6 @@ const Store = ({ title, user, products, onAddProduct, onEditProduct, onDeletePro
 
     const [editingProduct, setEditingProduct] = useState(null);
 
-    const handleImageChange = (e, setter, currentData) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            const imageUrl = URL.createObjectURL(file);
-            setter({ ...currentData, image: imageUrl });
-        }
-    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -268,17 +261,26 @@ const Store = ({ title, user, products, onAddProduct, onEditProduct, onDeletePro
                     <h3 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>✨ Panel de Administración: Agregar Producto</h3>
                     <form style={styles.formGroup} onSubmit={handleSubmit}>
                         {/* Add Form Inputs - Reusing logic for brevity in this replace block */}
-                        <label style={styles.label}>Imagen del Producto</label>
+                        <label style={styles.label}>Imagen del Producto (URL)</label>
+                        <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.5rem' }}>
+                            Sube tu imagen a <a href="https://imgbb.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>ImgBB (Gratis)</a> y pega el "Enlace directo" aquí.
+                        </div>
                         <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleImageChange(e, setNewProduct, newProduct)}
-                            id="product-image-input"
+                            type="url"
+                            placeholder="https://i.ibb.co/..."
+                            value={newProduct.image || ''}
+                            onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
                             style={styles.input}
                             required
                         />
                         {newProduct.image && (
-                            <img src={newProduct.image} alt="Preview" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '10px' }} />
+                            <img
+                                src={newProduct.image}
+                                onError={(e) => e.target.style.display = 'none'}
+                                onLoad={(e) => e.target.style.display = 'block'}
+                                alt="Preview"
+                                style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '10px', marginTop: '0.5rem' }}
+                            />
                         )}
 
                         <input
@@ -349,15 +351,16 @@ const Store = ({ title, user, products, onAddProduct, onEditProduct, onDeletePro
                         <h3 style={{ marginBottom: '1rem' }}>Editar Producto</h3>
 
                         <form style={styles.formGroup} onSubmit={handleEditSubmit}>
-                            <label style={styles.label}>Imagen (Dejar vacío para mantener actual)</label>
+                            <label style={styles.label}>URL de Imagen</label>
                             <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleImageChange(e, setEditingProduct, editingProduct)}
+                                type="url"
+                                placeholder="https://..."
+                                value={editingProduct.image || ''}
+                                onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
                                 style={styles.input}
                             />
                             {editingProduct.image && (
-                                <img src={editingProduct.image} alt="Preview" style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '10px' }} />
+                                <img src={editingProduct.image} alt="Preview" style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '10px', marginTop: '0.5rem' }} />
                             )}
 
                             <input
