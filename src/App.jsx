@@ -7,6 +7,9 @@ import Footer from './components/Footer';
 import Login from './components/Login';
 import Store from './components/Store';
 import WhatsAppButton from './components/WhatsAppButton';
+import ProductDetail from './components/ProductDetail';
+import Cart from './components/Cart';
+import { CartProvider } from './context/CartContext';
 
 
 // Reusing Store component logic for Workshops and Packages by passing different props
@@ -20,7 +23,7 @@ const RecentItems = ({ products, workshops, packages }) => {
     ...products.map(i => ({ ...i, type: 'Producto' })),
     ...workshops.map(i => ({ ...i, type: 'Taller' })),
     ...packages.map(i => ({ ...i, type: 'Paquete' }))
-  ].sort((a, b) => getTime(b) - getTime(a)).slice(0, 10);
+  ].sort((a, b) => getTime(b) - getTime(a)).slice(10, 0);
 
   const getTypeColor = (type) => {
     if (type === 'Producto') return '#FCB57B';
@@ -41,7 +44,7 @@ const RecentItems = ({ products, workshops, packages }) => {
             : numericPrice;
 
           return (
-            <div key={index} className="card">
+            <Link key={index} to={`/product/${item.id}`} className="card" style={{ textDecoration: 'none', color: 'inherit' }}>
               <img src={item.image} alt={item.title} className="card-image" />
               <div className="card-content">
                 <span className="card-badge" style={{ backgroundColor: getTypeColor(item.type) }}>{item.type}</span>
@@ -58,7 +61,7 @@ const RecentItems = ({ products, workshops, packages }) => {
                   <span className="final-price">${discountedPrice}</span>
                 </div>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>
@@ -179,57 +182,62 @@ function App() {
 
   return (
     <Router>
-      <div className="app-container">
-        <Header user={user} onLogout={handleLogout} />
+      <CartProvider>
+        <div className="app-container">
+          <Header user={user} onLogout={handleLogout} />
 
-        <Routes>
-          <Route path="/" element={
-            <>
-              <Hero />
-              <RecentItems products={products} workshops={workshops} packages={packages} />
-            </>
-          } />
+          <Routes>
+            <Route path="/" element={
+              <>
+                <Hero />
+                <RecentItems products={products} workshops={workshops} packages={packages} />
+              </>
+            } />
 
-          <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
 
-          <Route path="/store" element={
-            <Store
-              title="Tienda Tell Candles"
-              user={user}
-              products={products}
-              onAddProduct={handleAdd(setProducts, 'Producto')}
-              onEditProduct={handleEdit(setProducts)}
-              onDeleteProduct={handleDelete(setProducts)}
-            />
-          } />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
 
-          <Route path="/workshops" element={
-            <Store
-              title="Talleres Tell Candles"
-              user={user}
-              products={workshops}
-              onAddProduct={handleAdd(setWorkshops, 'Taller')}
-              onEditProduct={handleEdit(setWorkshops)}
-              onDeleteProduct={handleDelete(setWorkshops)}
-            />
-          } />
+            <Route path="/store" element={
+              <Store
+                title="Tienda Tell Candles"
+                user={user}
+                products={products}
+                onAddProduct={handleAdd(setProducts, 'Producto')}
+                onEditProduct={handleEdit(setProducts)}
+                onDeleteProduct={handleDelete(setProducts)}
+              />
+            } />
 
-          <Route path="/packages" element={
-            <Store
-              title="Paquetes Tell Candles"
-              user={user}
-              products={packages}
-              onAddProduct={handleAdd(setPackages, 'Paquete')}
-              onEditProduct={handleEdit(setPackages)}
-              onDeleteProduct={handleDelete(setPackages)}
-            />
-          } />
+            <Route path="/workshops" element={
+              <Store
+                title="Talleres Tell Candles"
+                user={user}
+                products={workshops}
+                onAddProduct={handleAdd(setWorkshops, 'Taller')}
+                onEditProduct={handleEdit(setWorkshops)}
+                onDeleteProduct={handleDelete(setWorkshops)}
+              />
+            } />
 
-        </Routes>
+            <Route path="/packages" element={
+              <Store
+                title="Paquetes Tell Candles"
+                user={user}
+                products={packages}
+                onAddProduct={handleAdd(setPackages, 'Paquete')}
+                onEditProduct={handleEdit(setPackages)}
+                onDeleteProduct={handleDelete(setPackages)}
+              />
+            } />
 
-        <Footer user={user} />
-        <WhatsAppButton />
-      </div>
+          </Routes>
+
+          <Footer user={user} />
+          <WhatsAppButton />
+        </div>
+      </CartProvider>
     </Router>
   );
 }

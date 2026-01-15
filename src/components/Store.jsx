@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const ProductCard = ({ id, image, title, description, price, discount, onDelete, onEdit, isAdmin }) => {
     const numericPrice = parseFloat(price);
@@ -18,7 +19,9 @@ const ProductCard = ({ id, image, title, description, price, discount, onDelete,
             display: 'flex',
             flexDirection: 'column',
             position: 'relative',
-            height: '100%'
+            height: '100%',
+            textDecoration: 'none',
+            color: 'inherit'
         },
         image: {
             width: '100%',
@@ -86,7 +89,8 @@ const ProductCard = ({ id, image, title, description, price, discount, onDelete,
             cursor: 'pointer',
             fontWeight: 'bold',
             border: 'none',
-            color: '#fff'
+            color: '#fff',
+            zIndex: 2 // Ensure buttons are clickable above the Link
         },
         deleteButton: {
             backgroundColor: '#ff4d4d',
@@ -97,34 +101,38 @@ const ProductCard = ({ id, image, title, description, price, discount, onDelete,
     };
 
     return (
-        <div style={styles.card}>
-            {hasDiscount && (
-                <div style={styles.badge}>-{numericDiscount}% SALE</div>
-            )}
-            <img src={image} alt={title} style={styles.image} />
-            <div style={styles.content}>
-                <h3 style={styles.title}>{title}</h3>
-                <p style={styles.description}>{description}</p>
-
-                <div style={styles.priceContainer}>
-                    {hasDiscount ? (
-                        <div>
-                            <span style={styles.originalPrice}>${numericPrice}</span>
-                            <span style={styles.finalPrice}> ${discountedPrice}</span>
-                            <span style={styles.discountLabel}>Precio Rebajado</span>
-                        </div>
-                    ) : (
-                        <div style={styles.finalPrice}>${numericPrice}</div>
-                    )}
-                </div>
-
-                {isAdmin && (
-                    <div style={styles.buttonGroup}>
-                        <button onClick={() => onEdit({ id, image, title, description, price, discount })} style={{ ...styles.actionButton, ...styles.editButton }}>Editar</button>
-                        <button onClick={onDelete} style={{ ...styles.actionButton, ...styles.deleteButton }}>Eliminar</button>
-                    </div>
+        <div style={{ position: 'relative' }}>
+            <Link to={`/product/${id}`} style={styles.card}>
+                {hasDiscount && (
+                    <div style={styles.badge}>-{numericDiscount}% SALE</div>
                 )}
-            </div>
+                <img src={image} alt={title} style={styles.image} />
+                <div style={styles.content}>
+                    <h3 style={styles.title}>{title}</h3>
+                    <p style={styles.description}>{description}</p>
+
+                    <div style={styles.priceContainer}>
+                        {hasDiscount ? (
+                            <div>
+                                <span style={styles.originalPrice}>${numericPrice}</span>
+                                <span style={styles.finalPrice}> ${discountedPrice}</span>
+                                <span style={styles.discountLabel}>Precio Rebajado</span>
+                            </div>
+                        ) : (
+                            <div style={styles.finalPrice}>${numericPrice}</div>
+                        )}
+                    </div>
+                </div>
+            </Link>
+
+            {isAdmin && (
+                <div style={{ padding: '0 1rem 1rem 1rem' }}>
+                    <div style={styles.buttonGroup}>
+                        <button onClick={(e) => { e.preventDefault(); onEdit({ id, image, title, description, price, discount }); }} style={{ ...styles.actionButton, ...styles.editButton }}>Editar</button>
+                        <button onClick={(e) => { e.preventDefault(); onDelete(); }} style={{ ...styles.actionButton, ...styles.deleteButton }}>Eliminar</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -135,7 +143,8 @@ const Store = ({ title, user, products, onAddProduct, onEditProduct, onDeletePro
         description: '',
         price: '',
         discount: '0',
-        image: null
+        image: null,
+        options: '' // Comma separated string for UI
     });
 
     const [editingProduct, setEditingProduct] = useState(null);
@@ -145,16 +154,35 @@ const Store = ({ title, user, products, onAddProduct, onEditProduct, onDeletePro
         e.preventDefault();
         if (!newProduct.title || !newProduct.price || !newProduct.image) return;
 
-        const productWithId = { ...newProduct, id: Date.now() };
+        // Process options: split by comma, trim
+        const optionsArray = newProduct.options
+            ? newProduct.options.split(',').map(s => s.trim()).filter(Boolean)
+            : [];
 
-        onAddProduct(productWithId);
-        setNewProduct({ title: '', description: '', price: '', discount: '0', image: null });
-        document.getElementById('product-image-input').value = '';
+        const productPayload = {
+            ...newProduct,
+            id: Date.now(),
+            options: optionsArray
+        };
+
+        onAddProduct(productPayload);
+        setNewProduct({ title: '', description: '', price: '', discount: '0', image: null, options: '' });
+        const fileInput = document.getElementById('product-image-input');
+        if (fileInput) fileInput.value = '';
     };
 
     const handleEditSubmit = (e) => {
         e.preventDefault();
-        onEditProduct(editingProduct);
+
+        let optionsArray = [];
+        if (typeof editingProduct.options === 'string') {
+            optionsArray = editingProduct.options.split(',').map(s => s.trim()).filter(Boolean);
+        } else if (Array.isArray(editingProduct.options)) {
+            optionsArray = editingProduct.options; // Already array
+        }
+
+        const payload = { ...editingProduct, options: optionsArray };
+        onEditProduct(payload);
         setEditingProduct(null);
     };
 
@@ -266,6 +294,7 @@ const Store = ({ title, user, products, onAddProduct, onEditProduct, onDeletePro
                             Sube una imagen (será alojada en ImgBB automáticamente).
                         </div>
                         <input
+                            id="product-image-input" // Added ID for clearing
                             type="file"
                             accept="image/*"
                             onChange={async (e) => {
@@ -327,6 +356,15 @@ const Store = ({ title, user, products, onAddProduct, onEditProduct, onDeletePro
                             style={{ ...styles.input, minHeight: '100px' }}
                         />
 
+                        <label style={styles.label}>Opciones del Producto (separadas por coma)</label>
+                        <input
+                            type="text"
+                            placeholder="Ej: Vainilla, Chocolate, Fresa"
+                            value={newProduct.options}
+                            onChange={(e) => setNewProduct({ ...newProduct, options: e.target.value })}
+                            style={styles.input}
+                        />
+
                         <div style={{ display: 'flex', gap: '1rem' }}>
                             <div style={{ flex: 1 }}>
                                 <label style={{ ...styles.label, display: 'block', marginBottom: '0.5rem' }}>Precio ($)</label>
@@ -366,7 +404,18 @@ const Store = ({ title, user, products, onAddProduct, onEditProduct, onDeletePro
                         {...product}
                         isAdmin={user}
                         onDelete={() => onDeleteProduct(product.id || index)}
-                        onEdit={(prod) => setEditingProduct(prod)}
+                        onEdit={(prod) => {
+                            // Transform options array back to string for editing
+                            let optsString = '';
+                            if (Array.isArray(prod.options)) {
+                                optsString = prod.options.join(', ');
+                            } else if (typeof prod.options === 'string' && prod.options.startsWith('[')) {
+                                try {
+                                    optsString = JSON.parse(prod.options).join(', ');
+                                } catch { optsString = prod.options; }
+                            }
+                            setEditingProduct({ ...prod, options: optsString });
+                        }}
                     />
                 ))}
             </div>
@@ -405,6 +454,15 @@ const Store = ({ title, user, products, onAddProduct, onEditProduct, onDeletePro
                                 value={editingProduct.description}
                                 onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
                                 style={{ ...styles.input, minHeight: '100px' }}
+                            />
+
+                            <label style={styles.label}>Opciones (separadas por coma)</label>
+                            <input
+                                type="text"
+                                placeholder="Ej: Vainilla, Chocolate"
+                                value={editingProduct.options}
+                                onChange={(e) => setEditingProduct({ ...editingProduct, options: e.target.value })}
+                                style={styles.input}
                             />
 
                             <div style={{ display: 'flex', gap: '1rem' }}>
