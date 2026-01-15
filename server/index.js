@@ -5,6 +5,7 @@ import multer from 'multer';
 import axios from 'axios';
 import FormData from 'form-data';
 import db from './db.js';
+import { sendStatusEmail } from './email.js';
 
 dotenv.config();
 
@@ -103,7 +104,7 @@ app.delete('/api/products/:id', async (req, res) => {
     }
 });
 
-import { sendStatusEmail } from './email.js';
+
 
 // ... (existing helper function / middle of file)
 
