@@ -18,27 +18,39 @@ const upload = multer({ storage: multer.memoryStorage() });
 // IMGBB Proxy Endpoint
 app.post('/api/upload', upload.single('image'), async (req, res) => {
     try {
+        console.log('📸 Upload request received');
         if (!req.file) {
+            console.log('❌ No file in request');
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const imageBuffer = req.file.buffer.toString('base64');
-        const formData = new FormData();
-        formData.append('image', imageBuffer);
+        console.log(`📦 File size: ${req.file.size} bytes, Mime: ${req.file.mimetype}`);
 
+        const formData = new FormData();
+        // Send request as a file upload (Buffer) with filename
+        formData.append('image', req.file.buffer, {
+            filename: req.file.originalname || 'upload.jpg',
+            contentType: req.file.mimetype
+        });
+
+        console.log('🚀 Sending to ImgBB...');
         const response = await axios.post(`https://api.imgbb.com/1/upload?key=${process.env.IMGBB_TOKEN}`, formData, {
             headers: formData.getHeaders()
         });
 
         if (response.data && response.data.data && response.data.data.url) {
+            console.log('✅ Upload success:', response.data.data.url);
             res.json({ url: response.data.data.url });
         } else {
             throw new Error('ImgBB API response invalid');
         }
 
     } catch (error) {
-        console.error('ImgBB Upload Error:', error.response ? error.response.data : error.message);
-        res.status(500).json({ error: 'Failed to upload image' });
+        console.error('❌ ImgBB Upload Error Detail:', error.response ? error.response.data : error.message);
+        res.status(500).json({
+            error: 'Failed to upload image',
+            details: error.message
+        });
     }
 });
 

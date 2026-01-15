@@ -276,20 +276,26 @@ const Store = ({ title, user, products, onAddProduct, onEditProduct, onDeletePro
                                 formData.append('image', file);
 
                                 try {
-                                    // Visual feedback can be added here
                                     const res = await fetch('/api/upload', {
                                         method: 'POST',
                                         body: formData
                                     });
+
+                                    if (!res.ok) {
+                                        const text = await res.text();
+                                        console.error('Upload failed with:', text);
+                                        throw new Error(`Server returned ${res.status}: ${text}`);
+                                    }
+
                                     const data = await res.json();
                                     if (data.url) {
                                         setNewProduct(prev => ({ ...prev, image: data.url }));
                                     } else {
-                                        alert('Error subiendo imagen');
+                                        alert('Error subiendo imagen (sin URL)');
                                     }
                                 } catch (err) {
-                                    console.error(err);
-                                    alert('Error de conexión al subir imagen');
+                                    console.error('Client Upload Error:', err);
+                                    alert(`Error subiendo imagen: ${err.message}`);
                                 }
                             }}
                             style={styles.input}
