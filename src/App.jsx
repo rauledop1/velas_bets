@@ -131,91 +131,57 @@ class ErrorBoundary extends React.Component {
 function App() {
   const [user, setUser] = useState(false);
 
-  // Hooks for state with localStorage
-  const usePersistentState = (key, initialValue) => {
-    const [state, setState] = useState(() => {
-      try {
-        const saved = localStorage.getItem(key);
-        if (!saved) return initialValue;
+  const [user, setUser] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [workshops, setWorkshops] = useState([]);
+  const [packages, setPackages] = useState([]);
 
-        const parsed = JSON.parse(saved);
-        // Ensure we don't get 'null' or mismatched types if we expect an array
-        if (parsed === null || (Array.isArray(initialValue) && !Array.isArray(parsed))) {
-          return initialValue;
-        }
-        // If array is valid but empty, return fallback data (if provided via initialValue param logic, but here we do it caller side)
-        // Actually, let's keep it simple: return parsed.
-        return parsed;
-      } catch (error) {
-        console.error(`Error parsing localStorage key "${key}":`, error);
-        return initialValue;
+  // Fetch Global Data from PostgreSQL
+  const fetchData = async () => {
+    try {
+      const response = await fetch('/api/products');
+      if (response.ok) {
+        const data = await response.json();
+        // Categorize items
+        setProducts(data.filter(i => i.type === 'Producto'));
+        setWorkshops(data.filter(i => i.type === 'Taller'));
+        setPackages(data.filter(i => i.type === 'Paquete'));
       }
-    });
-
-    useEffect(() => {
-      try {
-        localStorage.setItem(key, JSON.stringify(state));
-      } catch (error) {
-        console.error(`Error saving to localStorage key "${key}":`, error);
-      }
-    }, [key, state]);
-
-    return [state, setState];
+    } catch (e) {
+      console.error("Error loading products:", e);
+    }
   };
 
-
-  const [products, setProducts] = usePersistentState('tell_candles_products_v3', []);
-  const [workshops, setWorkshops] = usePersistentState('tell_candles_workshops_v3', []);
-  const [packages, setPackages] = usePersistentState('tell_candles_packages_v3', []);
-
-  // Fetch Global Data (Simulating Database)
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/data.json');
-        if (response.ok) {
-          const data = await response.json();
-          // Only load if local storage is empty or to force sync?
-          // For this use case "Global Sync", we want to ensure these items exist.
-          // We will strategy: If products is empty, load data.
-          // Better strategy: We can't easily merge without dupe checking.
-          // Simplest: Check if we have 0 items. If 0, load from JSON.
-
-          setProducts(prev => prev.length === 0 ? data.products : prev);
-          setWorkshops(prev => prev.length === 0 ? data.workshops : prev);
-          setPackages(prev => prev.length === 0 ? data.packages : prev);
-        }
-      } catch (e) {
-        console.error("Error loading data.json", e);
-      }
-    };
     fetchData();
-  }, []); // Run once on mount
+  }, []);
 
   const handleLogin = () => setUser(true);
   const handleLogout = () => setUser(false);
 
-  // EXPORT HANDLER
-  const handleExport = () => {
-    const exportData = {
-      products,
-      workshops,
-      packages
-    };
-
-    // Copy as simple JSON for easy file replacement
-    const exportString = JSON.stringify(exportData, null, 2);
-
-    navigator.clipboard.writeText(exportString).then(() => {
-      alert("¡Datos Copiados! Copia este texto y pégalo en el archivo 'public/data.json' en GitHub para actualizar la web globalmente.");
-    }).catch(err => {
-      console.error('Error al copiar: ', err);
-      alert("Error al copiar los datos.");
-    });
+  // Generic Handlers to sync with Backend
+  const handleAdd = (setter, type) => async (item) => {
+    try {
+      const payload = { ...item, type };
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        // Refresh all data to get the new ID and consistent state
+        fetchData();
+      } else {
+        alert('Error al guardar en base de datos');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error de conexión');
+    }
   };
 
-  // Generic Handlers
-  const handleAdd = (setter) => (item) => setter(prev => [item, ...prev]);
+  // Optimistic updates for Edit/Delete (since Backend endpoint for PUT/DELETE is not yet in index.js)
+  // TODO: Add PUT/DELETE to server/index.js
   const handleEdit = (setter) => (updatedItem) => setter(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
   const handleDelete = (setter) => (id) => setter(prev => prev.filter(i => (i.id) !== id));
 
@@ -243,7 +209,7 @@ function App() {
               title="Tienda Tell Candles"
               user={user}
               products={products}
-              onAddProduct={handleAdd(setProducts)}
+              onAddProduct={handleAdd(setProducts, 'Producto')}
               onEditProduct={handleEdit(setProducts)}
               onDeleteProduct={handleDelete(setProducts)}
             />
@@ -254,7 +220,7 @@ function App() {
               title="Talleres Tell Candles"
               user={user}
               products={workshops}
-              onAddProduct={handleAdd(setWorkshops)}
+              onAddProduct={handleAdd(setWorkshops, 'Taller')}
               onEditProduct={handleEdit(setWorkshops)}
               onDeleteProduct={handleDelete(setWorkshops)}
             />
@@ -265,7 +231,7 @@ function App() {
               title="Paquetes Tell Candles"
               user={user}
               products={packages}
-              onAddProduct={handleAdd(setPackages)}
+              onAddProduct={handleAdd(setPackages, 'Paquete')}
               onEditProduct={handleEdit(setPackages)}
               onDeleteProduct={handleDelete(setPackages)}
             />
@@ -273,7 +239,7 @@ function App() {
 
         </Routes>
 
-        <Footer user={user} onExport={handleExport} />
+        <Footer user={user} />
         <WhatsAppButton />
       </div>
     </Router>
