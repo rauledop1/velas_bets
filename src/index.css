@@ -22,6 +22,8 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text-main);
   line-height: 1.6;
+  padding-top: 80px;
+  /* Space for fixed header */
 }
 
 h1,
@@ -167,21 +169,38 @@ select {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background-color: transparent;
-  position: relative;
-  z-index: 100;
+  padding: 0.8rem 2rem;
+  background-color: rgba(248, 245, 228, 0.95);
+  /* Theme BG with opacity */
+  backdrop-filter: blur(8px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .logo {
   font-family: var(--font-heading);
   color: var(--color-text-header);
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: bold;
   letter-spacing: 1px;
   text-decoration: none;
   display: flex;
   align-items: center;
+}
+
+.logo img {
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  /* Ensures center of image is shown */
+  border: 2px solid var(--color-text-header);
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
 }
 
 .nav {
@@ -251,7 +270,7 @@ select {
 /* Mobile Responsive Styles */
 @media (max-width: 768px) {
   .header {
-    padding: 1rem 1rem;
+    padding: 0.8rem 1rem;
   }
 
   .menu-toggle {

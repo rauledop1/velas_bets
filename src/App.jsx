@@ -187,10 +187,6 @@ function App() {
             <>
               <Hero />
               <RecentItems products={products} workshops={workshops} packages={packages} />
-              <div style={{ textAlign: 'center', margin: '2rem' }}>
-                <h3 style={{ color: '#999' }}>Explora nuestras secciones</h3>
-              </div>
-              <WorkshopGrid />
             </>
           } />
 
