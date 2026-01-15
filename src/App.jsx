@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import Login from './components/Login';
 import Store from './components/Store';
 import WhatsAppButton from './components/WhatsAppButton';
+import { defaultProducts, defaultWorkshops, defaultPackages } from './data/initialData';
 
 // Reusing Store component logic for Workshops and Packages by passing different props
 // Ideally we would rename Store to GenericGrid or similar, but for now we can alias imports or just reuse Store and pass "title" prop
@@ -142,6 +143,8 @@ function App() {
         if (parsed === null || (Array.isArray(initialValue) && !Array.isArray(parsed))) {
           return initialValue;
         }
+        // If array is valid but empty, return fallback data (if provided via initialValue param logic, but here we do it caller side)
+        // Actually, let's keep it simple: return parsed.
         return parsed;
       } catch (error) {
         console.error(`Error parsing localStorage key "${key}":`, error);
@@ -160,15 +163,16 @@ function App() {
     return [state, setState];
   };
 
-  const [products, setProducts] = usePersistentState('tell_candles_products_v2', []);
-  const [workshops, setWorkshops] = usePersistentState('tell_candles_workshops_v2', []);
-  const [packages, setPackages] = usePersistentState('tell_candles_packages_v2', []);
+  // Seed with default data if empty
+  const [products, setProducts] = usePersistentState('tell_candles_products_v3', defaultProducts);
+  const [workshops, setWorkshops] = usePersistentState('tell_candles_workshops_v3', defaultWorkshops);
+  const [packages, setPackages] = usePersistentState('tell_candles_packages_v3', defaultPackages);
 
   const handleLogin = () => setUser(true);
   const handleLogout = () => setUser(false);
 
   // Generic Handlers
-  const handleAdd = (setter) => (item) => setter(prev => [...prev, item]);
+  const handleAdd = (setter) => (item) => setter(prev => [item, ...prev]);
   const handleEdit = (setter) => (updatedItem) => setter(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
   const handleDelete = (setter) => (id) => setter(prev => prev.filter(i => (i.id) !== id));
 
@@ -228,28 +232,6 @@ function App() {
 
         <Footer />
         <WhatsAppButton />
-
-        {/* DEBUG OVERLAY - REMOVE BEFORE PRODUCTION */}
-        <div style={{
-          position: 'fixed',
-          bottom: '10px',
-          left: '10px',
-          backgroundColor: 'rgba(0,0,0,0.8)',
-          color: '#0f0',
-          padding: '15px',
-          zIndex: 9999,
-          borderRadius: '5px',
-          fontFamily: 'monospace',
-          fontSize: '12px',
-          pointerEvents: 'none'
-        }}>
-          <strong>DEBUG PANEL</strong><br />
-          User: {user ? 'LOGGED IN' : 'GUEST'}<br />
-          Products: {products ? products.length : 'NULL'}<br />
-          Workshops: {workshops ? workshops.length : 'NULL'}<br />
-          Packages: {packages ? packages.length : 'NULL'}<br />
-          Path: {window.location.pathname}
-        </div>
       </div>
     </Router>
   );
