@@ -1,18 +1,16 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const { Pool } = require('pg');
-const multer = require('multer');
-const axios = require('axios');
-const FormData = require('form-data');
-const fs = require('fs');
+import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
+import multer from 'multer';
+import axios from 'axios';
+import FormData from 'form-data';
+import db from './db.js';
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// Database Connection
-const db = require('./db');
 
 // File Upload Handling (Memory Storage for quick proxy)
 const upload = multer({ storage: multer.memoryStorage() });
