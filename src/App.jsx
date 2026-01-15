@@ -130,8 +130,6 @@ class ErrorBoundary extends React.Component {
 
 function App() {
   const [user, setUser] = useState(false);
-
-  const [user, setUser] = useState(false);
   const [products, setProducts] = useState([]);
   const [workshops, setWorkshops] = useState([]);
   const [packages, setPackages] = useState([]);
