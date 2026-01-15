@@ -17,69 +17,34 @@ const Header = ({ user, onLogout }) => {
         navigate('/');
     };
 
-    const styles = {
-        header: {
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '1rem 2rem',
-            backgroundColor: 'transparent',
-            position: 'relative',
-            zIndex: 100
-        },
-        logo: {
-            fontFamily: 'var(--font-heading)',
-            color: 'var(--color-text-header)',
-            fontSize: '1.8rem',
-            fontWeight: 'bold',
-            letterSpacing: '1px',
-            textDecoration: 'none'
-        },
-        nav: {
-            display: 'flex',
-            gap: '2rem',
-            listStyle: 'none',
-            alignItems: 'center'
-        },
-        navItem: {
-            fontSize: '0.9rem',
-            fontWeight: '600',
-            color: 'var(--color-text-main)',
-            cursor: 'pointer',
-            textDecoration: 'none',
-            transition: 'color 0.3s ease'
-        },
-        authButton: {
-            padding: '0.5rem 1rem',
-            backgroundColor: user ? '#D65A68' : 'transparent',
-            border: user ? 'none' : '1px solid var(--color-text-main)',
-            borderRadius: '20px',
-            color: user ? '#fff' : 'var(--color-text-main)',
-            cursor: 'pointer',
-            fontSize: '0.8rem',
-            fontWeight: 'bold',
-            marginLeft: '1rem'
-        }
-    };
+    const toggleMenu = () => setIsOpen(!isOpen);
+    const closeMenu = () => setIsOpen(false);
 
     return (
-        <header style={styles.header}>
-            <Link to="/" style={styles.logo}>
-                <img src="/assets/logo.png" alt="Tell Candles" style={{ height: '40px', verticalAlign: 'middle', marginRight: '10px' }} />
+        <header className="header">
+            <Link to="/" className="logo" onClick={closeMenu}>
+                <img src="/assets/logo.png" alt="Tell Candles" style={{ height: '40px', marginRight: '10px' }} />
                 Tell Candles
             </Link>
+
+            <button className="menu-toggle" onClick={toggleMenu} aria-label="Toggle navigation">
+                <span className="hamburger-line" style={{ transform: isOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }}></span>
+                <span className="hamburger-line" style={{ opacity: isOpen ? 0 : 1 }}></span>
+                <span className="hamburger-line" style={{ transform: isOpen ? 'rotate(-45deg) translate(5px, -6px)' : 'none' }}></span>
+            </button>
+
             <nav>
-                <ul style={styles.nav}>
+                <ul className={`nav ${isOpen ? 'open' : ''}`}>
                     {navItems.map((item) => (
                         <li key={item.label}>
-                            <Link to={item.path} style={styles.navItem}>{item.label}</Link>
+                            <Link to={item.path} className="nav-item" onClick={closeMenu}>{item.label}</Link>
                         </li>
                     ))}
                     <li>
                         {user ? (
-                            <button onClick={handleLogout} style={styles.authButton}>Salir</button>
+                            <button onClick={() => { handleLogout(); closeMenu(); }} className="auth-button btn-logout">Salir</button>
                         ) : (
-                            <Link to="/login" style={styles.authButton}>Ingresar</Link>
+                            <Link to="/login" className="auth-button btn-login" onClick={closeMenu}>Ingresar</Link>
                         )}
                     </li>
                 </ul>
