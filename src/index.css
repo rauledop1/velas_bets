@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Quicksand:wght@400;700&display=swap');
+
+:root {
+  --color-bg: #F8F5E4;
+  --color-footer: #B4CBA9;
+  --color-accent: #FCB57B;
+  --color-text-main: #4A4A4A;
+  --color-text-header: #D65A68;
+  /* Approximation of the dusty pink logo color */
+  --font-body: 'Quicksand', sans-serif;
+  --font-heading: 'Comfortaa', cursive;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+}
