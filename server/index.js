@@ -24,10 +24,9 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 
         const imageBuffer = req.file.buffer.toString('base64');
         const formData = new FormData();
-        formData.append('key', process.env.IMGBB_TOKEN);
         formData.append('image', imageBuffer);
 
-        const response = await axios.post('https://api.imgbb.com/1/upload', formData, {
+        const response = await axios.post(`https://api.imgbb.com/1/upload?key=${process.env.IMGBB_TOKEN}`, formData, {
             headers: formData.getHeaders()
         });
 
