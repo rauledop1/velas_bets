@@ -261,17 +261,39 @@ const Store = ({ title, user, products, onAddProduct, onEditProduct, onDeletePro
                     <h3 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>✨ Panel de Administración: Agregar Producto</h3>
                     <form style={styles.formGroup} onSubmit={handleSubmit}>
                         {/* Add Form Inputs - Reusing logic for brevity in this replace block */}
-                        <label style={styles.label}>Imagen del Producto (URL)</label>
+                        <label style={styles.label}>Imagen del Producto</label>
                         <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.5rem' }}>
-                            Sube tu imagen a <a href="https://imgbb.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>ImgBB (Gratis)</a> y pega el "Enlace directo" aquí.
+                            Sube una imagen (será alojada en ImgBB automáticamente).
                         </div>
                         <input
-                            type="url"
-                            placeholder="https://i.ibb.co/..."
-                            value={newProduct.image || ''}
-                            onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+
+                                const formData = new FormData();
+                                formData.append('image', file);
+
+                                try {
+                                    // Visual feedback can be added here
+                                    const res = await fetch('/api/upload', {
+                                        method: 'POST',
+                                        body: formData
+                                    });
+                                    const data = await res.json();
+                                    if (data.url) {
+                                        setNewProduct(prev => ({ ...prev, image: data.url }));
+                                    } else {
+                                        alert('Error subiendo imagen');
+                                    }
+                                } catch (err) {
+                                    console.error(err);
+                                    alert('Error de conexión al subir imagen');
+                                }
+                            }}
                             style={styles.input}
-                            required
+                            required={!newProduct.image}
                         />
                         {newProduct.image && (
                             <img
