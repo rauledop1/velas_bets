@@ -1,3 +1,5 @@
+import React, { useState } from 'react';
+
 const ProductCard = ({ id, image, title, description, price, discount, onDelete, onEdit, isAdmin }) => {
     const numericPrice = parseFloat(price);
     const numericDiscount = parseFloat(discount || 0);
