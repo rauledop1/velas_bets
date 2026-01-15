@@ -57,7 +57,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 // Products Endpoints
 app.get('/api/products', async (req, res) => {
     try {
-        const result = await db.query('SELECT * FROM products ORDER BY created_at DESC');
+        const result = await db.query('SELECT * FROM tellcandles_dev.products ORDER BY "createdAt" DESC');
         res.json(result.rows);
     } catch (err) {
         console.error(err);
@@ -69,7 +69,7 @@ app.post('/api/products', async (req, res) => {
     const { title, description, price, discount, image, type } = req.body;
     try {
         const result = await db.query(
-            'INSERT INTO products (title, description, price, discount, image, type) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            'INSERT INTO tellcandles_dev.products (title, description, price, discount, image, type) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
             [title, description, price, discount, image, type]
         );
         res.json(result.rows[0]);

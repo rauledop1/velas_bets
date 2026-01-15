@@ -12,13 +12,17 @@ const __dirname = path.dirname(__filename);
 
 const seedDatabase = async () => {
     try {
-        console.log('🌱 Starting database seed...');
+        console.log('🌱 Starting database seed for tellcandles_dev.products...');
 
-        // 1. Create Table if not exists
-        const schemaPath = path.join(__dirname, 'schema.sql');
-        const schemaSql = fs.readFileSync(schemaPath, 'utf8');
-        await db.query(schemaSql);
-        console.log('✅ Schema ensured.');
+        // 1. Ensure Table Structure (Add missing columns)
+        try {
+            await db.query(`ALTER TABLE tellcandles_dev.products ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'Producto'`);
+            console.log('✅ Column "type" ensured.');
+        } catch (e) {
+            console.log('ℹ️  Could not alter table (might not exist yet):', e.message);
+            // Fallback: Try creating it if it doesn't exist at all? 
+            // The User's DDL implies it exists. We'll proceed.
+        }
 
         // 2. Read Data
         const dataPath = path.join(__dirname, '../public/data.json');
@@ -34,7 +38,7 @@ const seedDatabase = async () => {
 
         for (const item of allItems) {
             // Check if item already exists by title to avoid duplicates
-            const existing = await db.query('SELECT id FROM products WHERE title = $1', [item.title]);
+            const existing = await db.query('SELECT id FROM tellcandles_dev.products WHERE title = $1', [item.title]);
             if (existing.rows.length > 0) {
                 console.log(`⚠️  Skipping "${item.title}" (already exists)`);
                 continue;
@@ -45,7 +49,7 @@ const seedDatabase = async () => {
             const discount = parseInt(item.discount || 0);
 
             await db.query(
-                'INSERT INTO products (title, description, price, discount, image, type) VALUES ($1, $2, $3, $4, $5, $6)',
+                'INSERT INTO tellcandles_dev.products (title, description, price, discount, image, type) VALUES ($1, $2, $3, $4, $5, $6)',
                 [item.title, item.description, price, discount, item.image || '', item.type]
             );
             console.log(`✨ Inserted: ${item.title} (${item.type})`);
