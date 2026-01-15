@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Footer = () => {
+const Footer = ({ user, onExport }) => {
     const styles = {
         footer: {
             backgroundColor: 'var(--color-footer)',
@@ -74,6 +74,23 @@ const Footer = () => {
             </div>
 
             <p style={{ marginTop: '2rem', fontSize: '0.8rem' }}>Copyright 2026 Tell Candles Clone</p>
+            {user && (
+                <button
+                    onClick={onExport}
+                    style={{
+                        marginTop: '1rem',
+                        padding: '0.5rem 1rem',
+                        backgroundColor: '#333',
+                        color: '#0f0',
+                        border: '1px solid #0f0',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem'
+                    }}
+                >
+                    ADMIN: COPIAR DATOS PARA PUBLICAR
+                </button>
+            )}
         </footer>
     );
 };

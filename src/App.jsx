@@ -171,6 +171,23 @@ function App() {
   const handleLogin = () => setUser(true);
   const handleLogout = () => setUser(false);
 
+  // EXPORT HANDLER
+  const handleExport = () => {
+    const data = {
+      defaultProducts: products,
+      defaultWorkshops: workshops,
+      defaultPackages: packages
+    };
+    const exportString = `export const defaultProducts = ${JSON.stringify(products, null, 2)};\n\nexport const defaultWorkshops = ${JSON.stringify(workshops, null, 2)};\n\nexport const defaultPackages = ${JSON.stringify(packages, null, 2)};`;
+
+    navigator.clipboard.writeText(exportString).then(() => {
+      alert("¡Datos Compilados Copiados! Mándame este texto para actualizar la web.");
+    }).catch(err => {
+      console.error('Error al copiar: ', err);
+      alert("Error al copiar los datos. Revisa la consola.");
+    });
+  };
+
   // Generic Handlers
   const handleAdd = (setter) => (item) => setter(prev => [item, ...prev]);
   const handleEdit = (setter) => (updatedItem) => setter(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
@@ -230,7 +247,7 @@ function App() {
 
         </Routes>
 
-        <Footer />
+        <Footer user={user} onExport={handleExport} />
         <WhatsAppButton />
       </div>
     </Router>
