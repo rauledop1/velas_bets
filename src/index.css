@@ -42,3 +42,13 @@ a {
 ul {
   list-style: none;
 }
+
+button {
+  font-family: inherit;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+}

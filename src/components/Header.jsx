@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-const Header = () => {
+const Header = ({ user, onLogout }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const navigate = useNavigate();
 
     const navItems = [
-        'INICIO', 'PAQUETES', 'TALLERES', 'ACT. SIN RESERVA', 'MEMBRESÍAS', 'TIENDA'
+        { label: 'INICIO', path: '/' },
+        { label: 'PAQUETES', path: '/' }, // Placeholder
+        { label: 'TALLERES', path: '/' }, // Placeholder
+        { label: 'TIENDA', path: '/store' }
     ];
+
+    const handleLogout = () => {
+        onLogout();
+        navigate('/');
+    };
 
     const styles = {
         header: {
@@ -22,48 +32,55 @@ const Header = () => {
             color: 'var(--color-text-header)',
             fontSize: '1.8rem',
             fontWeight: 'bold',
-            letterSpacing: '1px'
+            letterSpacing: '1px',
+            textDecoration: 'none'
         },
         nav: {
             display: 'flex',
             gap: '2rem',
             listStyle: 'none',
-            '@media (max-width: 768px)': {
-                display: 'none'
-            }
+            alignItems: 'center'
         },
         navItem: {
             fontSize: '0.9rem',
             fontWeight: '600',
             color: 'var(--color-text-main)',
             cursor: 'pointer',
+            textDecoration: 'none',
             transition: 'color 0.3s ease'
         },
-        mobileMenuButton: {
-            display: 'none', // Hidden on desktop, logic needed for mobile
-            background: 'none',
-            border: 'none',
-            fontSize: '1.5rem',
-            cursor: 'pointer'
+        authButton: {
+            padding: '0.5rem 1rem',
+            backgroundColor: user ? '#D65A68' : 'transparent',
+            border: user ? 'none' : '1px solid var(--color-text-main)',
+            borderRadius: '20px',
+            color: user ? '#fff' : 'var(--color-text-main)',
+            cursor: 'pointer',
+            fontSize: '0.8rem',
+            fontWeight: 'bold',
+            marginLeft: '1rem'
         }
     };
 
-    // Simple inline media query logic for the sake of this example
-    // Ideally would use a Hook or CSS Modules/Styled Components
-
     return (
         <header style={styles.header}>
-            <div style={styles.logo}>Sister's Nook</div>
-            <nav className="desktop-nav">
-                <ul style={{ display: 'flex', gap: '1.5rem', listStyle: 'none' }}>
+            <Link to="/" style={styles.logo}>Sister's Nook</Link>
+            <nav>
+                <ul style={styles.nav}>
                     {navItems.map((item) => (
-                        <li key={item}>
-                            <a href="#" style={styles.navItem}>{item}</a>
+                        <li key={item.label}>
+                            <Link to={item.path} style={styles.navItem}>{item.label}</Link>
                         </li>
                     ))}
+                    <li>
+                        {user ? (
+                            <button onClick={handleLogout} style={styles.authButton}>Salir</button>
+                        ) : (
+                            <Link to="/login" style={styles.authButton}>Ingresar</Link>
+                        )}
+                    </li>
                 </ul>
             </nav>
-            {/* Mobile menu placeholder */}
         </header>
     );
 };
