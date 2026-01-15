@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Hero from './components/Hero';
@@ -10,8 +10,8 @@ import Store from './components/Store';
 function App() {
   const [user, setUser] = useState(false);
 
-  // Initial dummy products with IDs and Discounts
-  const [products, setProducts] = useState([
+  // Initial dummy products
+  const initialProducts = [
     {
       id: 1,
       title: 'Kit de Velas Navideñas',
@@ -36,7 +36,18 @@ function App() {
       discount: '0',
       image: '/assets/workshop_pine_tree_1768444938177.png'
     }
-  ]);
+  ];
+
+  // Initialize from localStorage or default
+  const [products, setProducts] = useState(() => {
+    const saved = localStorage.getItem('tell_candles_products');
+    return saved ? JSON.parse(saved) : initialProducts;
+  });
+
+  // Save to localStorage whenever products change
+  useEffect(() => {
+    localStorage.setItem('tell_candles_products', JSON.stringify(products));
+  }, [products]);
 
   const handleLogin = () => {
     setUser(true);

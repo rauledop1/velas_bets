@@ -66,6 +66,7 @@ const Hero = () => {
                     <span style={styles.inclusionItem}>🕯 Todos los materiales</span>
                     <span style={styles.inclusionItem}>🍭 Snacks y bebidas</span>
                     <span style={styles.inclusionItem}>🎀 Préstamo de herramientas</span>
+                    <span style={styles.inclusionItem}>🌸 Un espacio hermoso en Tell Candles</span>
                 </div>
                 <p style={{ marginTop: '1rem', fontStyle: 'italic' }}>
                     📍 Ubicación: Plaza Palmas, Calle Héroes de Padierna #138, San Jerónimo Lídice, CDMX

@@ -73,7 +73,7 @@ const Footer = () => {
                 <p>Plaza Palmas. Calle Heroes de Padierna 138, San Jerónimo Lídice, CDMX</p>
             </div>
 
-            <p style={{ marginTop: '2rem', fontSize: '0.8rem' }}>Copyright 2026 Sister's Nook Clone</p>
+            <p style={{ marginTop: '2rem', fontSize: '0.8rem' }}>Copyright 2026 Tell Candles Clone</p>
         </footer>
     );
 };

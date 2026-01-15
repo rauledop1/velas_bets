@@ -213,7 +213,7 @@ const Store = ({ user, products, onAddProduct, onDeleteProduct }) => {
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.header}>Tienda Sister's Nook</h1>
+            <h1 style={styles.header}>Tienda Tell Candles</h1>
 
             {user && (
                 <div style={styles.adminPanel}>

@@ -64,7 +64,10 @@ const Header = ({ user, onLogout }) => {
 
     return (
         <header style={styles.header}>
-            <Link to="/" style={styles.logo}>Sister's Nook</Link>
+            <Link to="/" style={styles.logo}>
+                <img src="/assets/logo.png" alt="Tell Candles" style={{ height: '40px', verticalAlign: 'middle', marginRight: '10px' }} />
+                Tell Candles
+            </Link>
             <nav>
                 <ul style={styles.nav}>
                     {navItems.map((item) => (
