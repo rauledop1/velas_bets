@@ -23,7 +23,7 @@ const Header = ({ user, onLogout }) => {
     return (
         <header className="header">
             <Link to="/" className="logo" onClick={closeMenu}>
-                <img src="/assets/logo.png" alt="Tell Candles" style={{ height: '40px', marginRight: '10px' }} />
+                <img src="/assets/logo.png" alt="Tell Candles" />
                 Tell Candles
             </Link>
 
