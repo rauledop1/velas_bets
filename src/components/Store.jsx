@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 
 // Sub-component for individual product card
-const ProductCard = ({ image, title, description, price }) => {
+const ProductCard = ({ image, title, description, price, discount, onDelete, isAdmin }) => {
+    const numericPrice = parseFloat(price);
+    const numericDiscount = parseFloat(discount || 0);
+    const hasDiscount = numericDiscount > 0;
+
+    const discountedPrice = hasDiscount
+        ? (numericPrice - (numericPrice * (numericDiscount / 100))).toFixed(2)
+        : numericPrice;
+
     const styles = {
         card: {
             backgroundColor: '#fff',
@@ -9,7 +17,8 @@ const ProductCard = ({ image, title, description, price }) => {
             overflow: 'hidden',
             boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            position: 'relative'
         },
         image: {
             width: '100%',
@@ -33,38 +42,92 @@ const ProductCard = ({ image, title, description, price }) => {
             marginBottom: '1rem',
             flexGrow: 1
         },
-        price: {
+        priceContainer: {
+            marginTop: 'auto'
+        },
+        originalPrice: {
+            textDecoration: 'line-through',
+            color: '#999',
+            fontSize: '0.9rem'
+        },
+        finalPrice: {
             fontWeight: 'bold',
             fontSize: '1.1rem',
             color: 'var(--color-accent)',
-            marginTop: 'auto'
+        },
+        discountLabel: {
+            fontSize: '0.8rem',
+            color: 'var(--color-text-header)',
+            fontWeight: 'bold',
+            marginLeft: '0.5rem'
+        },
+        badge: {
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            backgroundColor: '#D65A68',
+            color: '#fff',
+            padding: '5px 10px',
+            borderRadius: '20px',
+            fontWeight: 'bold',
+            fontSize: '0.8rem',
+            zIndex: 10
+        },
+        deleteButton: {
+            backgroundColor: '#ff4d4d',
+            color: '#fff',
+            border: 'none',
+            padding: '0.5rem',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            marginTop: '1rem',
+            fontWeight: 'bold',
+            width: '100%'
         }
     };
 
     return (
         <div style={styles.card}>
+            {hasDiscount && (
+                <div style={styles.badge}>-{numericDiscount}% SALE</div>
+            )}
             <img src={image} alt={title} style={styles.image} />
             <div style={styles.content}>
                 <h3 style={styles.title}>{title}</h3>
                 <p style={styles.description}>{description}</p>
-                <div style={styles.price}>${price}</div>
+
+                <div style={styles.priceContainer}>
+                    {hasDiscount ? (
+                        <div>
+                            <span style={styles.originalPrice}>${numericPrice}</span>
+                            <span style={styles.finalPrice}> ${discountedPrice}</span>
+                            <span style={styles.discountLabel}>Precio Rebajado</span>
+                        </div>
+                    ) : (
+                        <div style={styles.finalPrice}>${numericPrice}</div>
+                    )}
+                </div>
+
+                {isAdmin && (
+                    <button onClick={onDelete} style={styles.deleteButton}>Eliminar Producto</button>
+                )}
             </div>
         </div>
     );
 };
 
-const Store = ({ user, products, onAddProduct }) => {
+const Store = ({ user, products, onAddProduct, onDeleteProduct }) => {
     const [newProduct, setNewProduct] = useState({
         title: '',
         description: '',
         price: '',
+        discount: '0',
         image: null
     });
 
     const handleImageChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            // Create a local URL for preview
             const imageUrl = URL.createObjectURL(file);
             setNewProduct({ ...newProduct, image: imageUrl });
         }
@@ -74,10 +137,11 @@ const Store = ({ user, products, onAddProduct }) => {
         e.preventDefault();
         if (!newProduct.title || !newProduct.price || !newProduct.image) return;
 
-        onAddProduct(newProduct);
-        // Reset form
-        setNewProduct({ title: '', description: '', price: '', image: null });
-        // Note: We need to clear the file input manually if we want to be perfect, but keeping it simple for now
+        // Create a unique ID for deletion tracking, simple timestamp for now (or randomness)
+        const productWithId = { ...newProduct, id: Date.now() };
+
+        onAddProduct(productWithId);
+        setNewProduct({ title: '', description: '', price: '', discount: '0', image: null });
         document.getElementById('product-image-input').value = '';
     };
 
@@ -112,6 +176,13 @@ const Store = ({ user, products, onAddProduct }) => {
             border: '1px solid #ddd',
             fontFamily: 'inherit'
         },
+        select: {
+            padding: '0.8rem',
+            borderRadius: '8px',
+            border: '1px solid #ddd',
+            fontFamily: 'inherit',
+            backgroundColor: '#fff'
+        },
         grid: {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
@@ -125,8 +196,20 @@ const Store = ({ user, products, onAddProduct }) => {
             borderRadius: '50px',
             fontWeight: 'bold',
             cursor: 'pointer'
+        },
+        label: {
+            fontSize: '0.9rem',
+            marginBottom: '-0.5rem',
+            fontWeight: 'bold',
+            color: 'var(--color-text-main)'
         }
     };
+
+    // Generate discount options 5% - 55%
+    const discountOptions = [];
+    for (let i = 5; i <= 55; i += 5) {
+        discountOptions.push(i);
+    }
 
     return (
         <div style={styles.container}>
@@ -136,6 +219,7 @@ const Store = ({ user, products, onAddProduct }) => {
                 <div style={styles.adminPanel}>
                     <h3 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>✨ Panel de Administración: Agregar Producto</h3>
                     <form style={styles.formGroup} onSubmit={handleSubmit}>
+                        <label style={styles.label}>Imagen del Producto</label>
                         <input
                             type="file"
                             accept="image/*"
@@ -147,6 +231,7 @@ const Store = ({ user, products, onAddProduct }) => {
                         {newProduct.image && (
                             <img src={newProduct.image} alt="Preview" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '10px' }} />
                         )}
+
                         <input
                             type="text"
                             placeholder="Nombre del Producto"
@@ -155,20 +240,41 @@ const Store = ({ user, products, onAddProduct }) => {
                             style={styles.input}
                             required
                         />
+
                         <textarea
                             placeholder="Descripción"
                             value={newProduct.description}
                             onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
                             style={{ ...styles.input, minHeight: '100px' }}
                         />
-                        <input
-                            type="number"
-                            placeholder="Precio"
-                            value={newProduct.price}
-                            onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                            style={styles.input}
-                            required
-                        />
+
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <div style={{ flex: 1 }}>
+                                <label style={{ ...styles.label, display: 'block', marginBottom: '0.5rem' }}>Precio ($)</label>
+                                <input
+                                    type="number"
+                                    placeholder="Precio"
+                                    value={newProduct.price}
+                                    onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                                    style={{ ...styles.input, width: '100%' }}
+                                    required
+                                />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <label style={{ ...styles.label, display: 'block', marginBottom: '0.5rem' }}>Descuento (%)</label>
+                                <select
+                                    style={{ ...styles.select, width: '100%' }}
+                                    value={newProduct.discount}
+                                    onChange={(e) => setNewProduct({ ...newProduct, discount: e.target.value })}
+                                >
+                                    <option value="0">Sin descuento</option>
+                                    {discountOptions.map(opt => (
+                                        <option key={opt} value={opt}>{opt}%</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
                         <button type="submit" style={styles.addButton}>Agregar Producto</button>
                     </form>
                 </div>
@@ -176,7 +282,12 @@ const Store = ({ user, products, onAddProduct }) => {
 
             <div style={styles.grid}>
                 {products.map((product, index) => (
-                    <ProductCard key={index} {...product} />
+                    <ProductCard
+                        key={product.id || index}
+                        {...product}
+                        isAdmin={user}
+                        onDelete={() => onDeleteProduct(product.id || index)} // Fallback to index if no ID (for initial dummy data)
+                    />
                 ))}
             </div>
         </div>
