@@ -116,7 +116,7 @@ const ProductCard = ({ image, title, description, price, discount, onDelete, isA
     );
 };
 
-const Store = ({ user, products, onAddProduct, onDeleteProduct }) => {
+const Store = ({ title, user, products, onAddProduct, onDeleteProduct }) => {
     const [newProduct, setNewProduct] = useState({
         title: '',
         description: '',
@@ -213,7 +213,7 @@ const Store = ({ user, products, onAddProduct, onDeleteProduct }) => {
 
     return (
         <div style={styles.container}>
-            <h1 style={styles.header}>Tienda Tell Candles</h1>
+            <h1 style={styles.header}>{title || "Tienda Tell Candles"}</h1>
 
             {user && (
                 <div style={styles.adminPanel}>

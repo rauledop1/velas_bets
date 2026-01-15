@@ -7,8 +7,8 @@ const Header = ({ user, onLogout }) => {
 
     const navItems = [
         { label: 'INICIO', path: '/' },
-        { label: 'PAQUETES', path: '/' }, // Placeholder
-        { label: 'TALLERES', path: '/' }, // Placeholder
+        { label: 'PAQUETES', path: '/packages' },
+        { label: 'TALLERES', path: '/workshops' },
         { label: 'TIENDA', path: '/store' }
     ];
 
